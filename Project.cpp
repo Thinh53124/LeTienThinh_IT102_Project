@@ -11,9 +11,40 @@ struct Material {
     int status;
 };
 
+struct Transaction{
+	char transId[20];
+	char matId[10];
+	char type[5];
+	char date[15];
+}; 
+
+struct Material initList[13]= {
+	    {"01", "Nuoc loc dong chai", "Chai", 20, 1},
+	    {"02", "Sprite", "Chai", 30, 1},
+	    {"03", "CoCa CoLa", "Lon", 50, 1},
+	    {"04", "Snack", "Goi", 200, 0},
+	    {"05", "Mirinda", "Lon", 10, 0},
+	    {"06", "7UP", "Chai", 36, 1},
+	    {"07", "SnacK khoai tay man", "Thung", 20, 0},
+	    {"08", "SnacK khoai tay cay", "Bich", 80, 1},
+	    {"09", "Keo mut", "Cay", 40, 1},
+	    {"10", "Keo vien", "Cai", 40, 1},
+	    {"11", "Sung do choi", "Cay", 40, 0},
+	    {"12", "Bo lego xep hinh", "Hop", 30, 1},
+	    {"13", "Set do choi oto", "Hop", 10, 1},
+	};
+
 int isNumber(char *s) {
     for (int i = 0; s[i] != '\0'; i++)
         if (s[i] < '0' || s[i] > '9') return 0;
+    return 1;
+}
+
+int isEmpty(char *str) {
+    if (str == NULL) return 1;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (!isspace((unsigned char)str[i])) return 0;
+    }
     return 1;
 }
 
@@ -31,11 +62,26 @@ void deleteCharactor(char *string, int index){
 	string [length-1] = '\0';
 }
 
-void removeSpaces(char *str){
-	int index = 0;
-	while(str[0] == ' '){
-		deleteCharactor(str, index);
-	}
+void removeSpaces(char *str) {
+    int len = strlen(str);
+    int start = 0;
+    if (len == 0) {
+        str[0] = '\0';
+        return;
+    }
+    while (start < len && isspace((unsigned char)str[start])) start++;
+    if (start == len) {
+        str[0] = '\0';
+        return;
+    }
+
+    int end = len - 1;
+    while (end >= start && isspace((unsigned char)str[end])) end--;
+    int j = 0;
+    for (int i = start; i <= end; i++) {
+        str[j++] = str[i];
+    }
+    str[j] = '\0';
 }
 
 void strToLower(char *s) {
@@ -67,69 +113,67 @@ void inputMatIdStrict(char *matId, struct Material *arr, int length, int checkEx
 void addMat(struct Material *arr, int *length) {
     int n;
     char tmp[20];
-    char str[50];
     while (1) {
         printf("Nhap so luong loai vat tu muon them: ");
         fgets(tmp, sizeof(tmp), stdin);
         tmp[strcspn(tmp, "\n")] = '\0';
         if (strlen(tmp) == 0) { 
-		printf("So luong khong duoc rong!\n"); 
-		continue; }
+            printf("So luong khong duoc rong!\n"); 
+            continue; 
+        }
         if (!isNumber(tmp)) { 
-		printf("So luong chi duoc nhap so!\n"); 
-		continue; }
+            printf("So luong chi duoc nhap so!\n"); 
+            continue; 
+        }
         n = atoi(tmp);
         if (n <= 0) { 
-		printf("So luong phai > 0!\n"); 
-		continue; }
+            printf("So luong phai > 0!\n"); 
+            continue; 
+        }
         break;
     }
-
     for (int k = 0; k < n; k++) {
         struct Material mat;
         printf("\n--- Nhap thong tin vat tu thu %d ---\n", *length + 1);
         printf("Nhap ma vat tu: ");
         inputMatIdStrict(mat.matId, arr, *length, 1);
-		
-        while (1) {
+        do {
             printf("Nhap ten vat tu: ");
             fgets(mat.name, sizeof(mat.name), stdin);
             mat.name[strcspn(mat.name, "\n")] = '\0';
-            if (strlen(mat.name) == 0) { 
-            removeSpaces(str);
-			printf("Ten vat tu khong duoc rong!\n"); 
-			continue; }
-            break;
-        }
-
-        while (1) {
+            removeSpaces(mat.name);
+            if (isEmpty(mat.name)) {
+                printf("Ten vat tu khong duoc rong!\n"); 
+            }
+        } while (isEmpty(mat.name));
+        do {
             printf("Nhap don vi tinh: ");
             fgets(mat.unit, sizeof(mat.unit), stdin);
             mat.unit[strcspn(mat.unit, "\n")] = '\0';
-            if (strlen(mat.unit) == 0) { 
-            removeSpaces(str);
-			printf("Don vi tinh khong duoc rong!\n"); 
-			continue; }
-            break;
-        }
-
+            removeSpaces(mat.unit);
+            if (isEmpty(mat.unit)) {
+                printf("Don vi tinh khong duoc rong!\n");
+            }
+        } while (isEmpty(mat.unit));
         while (1) {
             printf("Nhap so luong: ");
             fgets(tmp, sizeof(tmp), stdin);
             tmp[strcspn(tmp, "\n")] = '\0';
             if (strlen(tmp) == 0) { 
-			printf("So luong khong duoc rong!\n"); 
-			continue; }
+                printf("So luong khong duoc rong!\n"); 
+                continue; 
+            }
             if (!isNumber(tmp)) { 
-			printf("So luong chi duoc nhap so!\n"); 
-			continue; }
+                printf("So luong chi duoc nhap so!\n"); 
+                continue; 
+            }
             mat.qty = atoi(tmp);
             if (mat.qty < 0) { 
-			printf("So luong phai >= 0!\n"); 
-			continue; }
+                printf("So luong phai >= 0!\n"); 
+                continue; 
+            }
             break;
         }
-
         mat.status = 1;
         arr[*length] = mat;
         (*length)++;
@@ -138,65 +182,65 @@ void addMat(struct Material *arr, int *length) {
 }
 
 void updateMat(struct Material *arr, int length) {
-	char str[50];
     if (length == 0) { 
-	printf("Danh sach vat tu trong!\n"); 
-	return; }
+        printf("Danh sach vat tu trong!\n"); 
+        return; 
+    }
     char id[10];
     printf("Nhap ma vat tu can cap nhat: ");
     inputMatIdStrict(id, arr, length, 0);
-
     int index = -1;
     for (int i = 0; i < length; i++)
         if (strcmp(arr[i].matId, id) == 0) { 
-			index = i; 
-			break; }
-
-	    if (index == -1) { 
-			printf("Khong tim thay vat tu voi ma %s\n", id); 
-			return; }
-
+            index = i; 
+            break; 
+        }
+    if (index == -1) { 
+        printf("Khong tim thay vat tu voi ma %s\n", id); 
+        return; 
+    }
     while (1) {
         printf("Cap nhat ten vat tu: ");
         fgets(arr[index].name, sizeof(arr[index].name), stdin);
         arr[index].name[strcspn(arr[index].name, "\n")] = '\0';
-        removeSpaces(str);
-        if (strlen(arr[index].name) == 0) { 
-     		removeSpaces(str);
-			printf("Ten vat tu khong duoc rong!\n"); 
-			continue; }
+        removeSpaces(arr[index].name);
+        if (isEmpty(arr[index].name)) {
+            printf("Ten vat tu khong duoc rong!\n");
+            continue;
+        }
         break;
     }
-
     while (1) {
         printf("Cap nhat don vi tinh: ");
         fgets(arr[index].unit, sizeof(arr[index].unit), stdin);
         arr[index].unit[strcspn(arr[index].unit, "\n")] = '\0';
-        if (strlen(arr[index].unit) == 0) { 
-        	removeSpaces(str);
-			printf("Don vi tinh khong duoc rong!\n"); 
-			continue; }
+        removeSpaces(arr[index].unit);
+        if (isEmpty(arr[index].unit)) {
+            printf("Don vi tinh khong duoc rong!\n");
+            continue;
+        }
         break;
     }
-
     char tmp[20];
     while (1) {
         printf("Cap nhat so luong: ");
         fgets(tmp, sizeof(tmp), stdin);
         tmp[strcspn(tmp, "\n")] = '\0';
         if (strlen(tmp) == 0) { 
-			printf("So luong khong duoc rong!\n"); 
-			continue; }
+            printf("So luong khong duoc rong!\n"); 
+            continue; 
+        }
         if (!isNumber(tmp)) { 
-			printf("So luong chi duoc nhap so!\n"); 
-			continue; }
+            printf("So luong chi duoc nhap so!\n"); 
+            continue; 
+        }
         arr[index].qty = atoi(tmp);
         if (arr[index].qty < 0) { 
-			printf("So luong phai >= 0!\n"); 
-			continue; }
+            printf("So luong phai >= 0!\n"); 
+            continue; 
+        }
         break;
     }
-
     printf("Cap nhat thanh cong!\n");
 }
 
@@ -237,7 +281,7 @@ void changeStatus(struct Material *arr, int *length) {
 			        printf("Vat tu dang MO. \nBan co muon KHOA khong? (co(1)/khong(0)): ");
 			        choice = getchar();
 			        getchar();
-			        if (choice == 'co(1)' || choice == '1') {
+			        if (choice == '1') {
 			            arr[index1].status = 0;
 			            printf("Da KHOA vat tu thanh cong!\n");
 			        } else {
@@ -248,7 +292,7 @@ void changeStatus(struct Material *arr, int *length) {
 			        printf("Vat tu dang KHOA. \nBan co muon MO khong? (co(1)/khong(0)): ");
 			        choice = getchar();
 			        getchar();
-			        if (choice == 'co(1)' || choice == '1') {
+			        if (choice == '1') {
 			            arr[index1].status = 1;
 			            printf("Da MO vat tu thanh cong!\n");
 			        } else {
@@ -279,6 +323,8 @@ void changeStatus(struct Material *arr, int *length) {
                 break;
             }
             case 3: 
+	            printf("Dang thoat chuc nang...");
+	            break;
             default: printf("Vui long chon 1 -> 3!\n");
         }
     }
@@ -291,7 +337,7 @@ void searchMat(struct Material *arr, int length) {
     char key[50];
     int index = 0;
     while (1) {
-        printf("\n1. Tim theo ma vat tu\n2. Tim theo ten vat tu\n3. Quay lai\nLua chon: ");
+        printf("\n1. Tim theo ma vat tu\n2. Tim theo ten vat tu\n3. Quay lai\nLua chon cua ban: ");
         scanf("%d", &choice); getchar();
         switch (choice) {
             case 1: {
@@ -309,11 +355,10 @@ void searchMat(struct Material *arr, int length) {
             case 2: {
                 printf("Nhap ten vat tu muon tim: ");
                 fgets(key, sizeof(key), stdin); key[strcspn(key, "\n")] = '\0';
-                removeSpaces(str);
-                if (strlen(arr[index].name) == 0) { 
-		     		removeSpaces(str);
-					printf("Ten vat tu khong duoc rong!\n"); 
-					continue; 
+                removeSpaces(key);
+				if (isEmpty(key)) {
+				    printf("Ten vat tu khong duoc rong!\n");
+				    continue;
 				}
                 strToLower(key);
 
@@ -331,33 +376,139 @@ void searchMat(struct Material *arr, int length) {
                 if (!found2) printf("Khong tim thay vat tu!\n");
                 break;
             }
-            case 3: return;
+            case 3: printf("Dang thoat chuong trinh..."); return;
             default: printf("Vui long chon 1 -> 3!\n");
         }
     }
 }
 
-void displayMat(struct Material *arr, int length){
-	
-	}
-	
-void sortMat(struct Material *arr, int length){
-    for (int i = 0; i < length - 1; i++) {
-        for (int j = i + 1; j < length; j++) {
-            if (strcmp(arr[i].matId, arr[j].matId) > 0) {
-                struct Material tmp = arr[i]; 
-                arr[i] = arr[j]; 
-                arr[j] = tmp;
+void displayMat(struct Material *arr, int length) {
+    if (length == 0) {
+        printf("Danh sach vat tu trong!\n");
+        return;
+    }
+
+    int page = 1;
+    int perPage = 5;
+    int totalPage = (length + perPage - 1) / perPage;
+
+    while (1) {
+        printf("\n======================== DANH SACH VAT TU (Trang %d/%d) =========================\n", page, totalPage);
+        printf("| %-5s | %-25s | %-10s | %-8s | %-15s |\n",
+               "Ma", "Ten", "Don vi", "So luong", "Trang thai");
+        printf("-------------------------------------------------------------------------------\n");
+
+        int start = (page - 1) * perPage;
+        int end = start + perPage;
+        if (end > length) end = length;
+
+        for (int i = start; i < end; i++) {
+            printf("| %-5s | %-25s | %-10s | %-8d | %-15s |\n",
+                   arr[i].matId, arr[i].name, arr[i].unit, arr[i].qty,
+                   arr[i].status == 1 ? "Con su dung" : "Het han su dung");
+        }
+
+        printf("-------------------------------------------------------------------------------\n");
+        printf("1. Trang truoc\t2. Trang sau\t3. Den trang\t4. Thoat hien thi\nLua chon: ");
+
+        int c;
+        scanf("%d", &c);
+        getchar();
+
+        switch(c) {
+            case 1:
+                if (page == 1) {
+                    printf("Ban dang o trang dau!\n");
+                } else {
+                    page--;
+                }
+                break;
+            case 2:
+                if (page == totalPage) {
+                    printf("Ban dang o trang cuoi!\n");
+                } else {
+                    page++;
+                }
+                break;
+            case 3: {
+                int gotoPage;
+                printf("Nhap trang muon den (1-%d): ", totalPage);
+                scanf("%d", &gotoPage);
+                getchar();
+                if (gotoPage >= 1 && gotoPage <= totalPage) {
+                    page = gotoPage;
+                } else {
+                    printf("Trang khong hop le!\n");
+                }
+                break;
             }
+            case 4:
+                printf("Dang thoat hien thi danh sach...\n");
+                return;
+            default:
+                printf("Lua chon khong hop le!\n");
         }
     }
-    printf("Sap xep thanh cong!\n");
+}
+
+void sortMat(struct Material *arr, int length) {
+    int choice;
+    while (1) {
+        printf("\n===== MENU SAP XEP =====\n");
+        printf("1. Sap xep theo ten (A-Z, khong phan biet hoa thuong)\n");
+        printf("2. Sap xep theo so luong (tang dan)\n");
+        printf("3. Thoat\n");
+        printf("Lua chon cua ban: ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1: {
+                for (int i = 0; i < length - 1; i++) {
+                    for (int j = 0; j < length - i - 1; j++) {
+                        const char *a = arr[j].name;
+                        const char *b = arr[j + 1].name;
+                        while (*a && *b && tolower(*a) == tolower(*b)) { a++; b++; }
+                        if (tolower(*a) > tolower(*b)) {
+                            struct Material tmp = arr[j];
+                            arr[j] = arr[j + 1];
+                            arr[j + 1] = tmp;
+                        }
+                    }
+                }
+                printf("Da sap xep theo ten!\n");
+                break;
+            }
+            case 2: {
+                for (int i = 0; i < length - 1; i++) {
+                    for (int j = 0; j < length - i - 1; j++) {
+                        if (arr[j].qty > arr[j + 1].qty) {
+                            struct Material tmp = arr[j];
+                            arr[j] = arr[j + 1];
+                            arr[j + 1] = tmp;
+                        }
+                    }
+                }
+                printf("Da sap xep theo so luong!\n");
+                break;
+            }
+            case 3:
+                printf("Da thoat chuc nang sap xep!\n");
+                return;
+            default:
+                printf("Lua chon khong hop le, vui long chon 1->3!\n");
+        }
+    }
 }
 	
 int main() {
     struct Material arr[100]; 
-	int length = 0;
-	char str[50];
+    int length = 13;
+    for (int i = 0; i < 13; i++) {
+        arr[i] = initList[i];
+    }
+
+    char str[50];
     while (1) {
         int choiceMain = 0;
         printf("\n======= MENU QUAN LY VAT TU =======");
@@ -366,7 +517,6 @@ int main() {
         printf("\n|3. Thoat                         |");
         printf("\n===================================");
         printf("\nChon chuc nang: ");
-        removeSpaces(str);
         scanf("%d", &choiceMain); 
         getchar();
         switch (choiceMain) {
@@ -391,7 +541,7 @@ int main() {
                         case 4: searchMat(arr, length); break;
                         case 5: displayMat(arr, length); break;
                         case 6: sortMat(arr, length); break;
-                        case 7: printf("Da thoat menu quan ly vat tu!\n"); break;
+                        case 7: printf("Dang thoat menu quan ly vat tu...\n"); break;
                         default: printf("Vui long chon tu 1->7!\n");
                     }
                 } while (choice1 != 7);
@@ -410,7 +560,7 @@ int main() {
                     switch (choice2) {
                         case 1: break;
                         case 2: break;
-                        case 3: printf("Da thoat menu giao dich!\n"); break;
+                        case 3: printf("Dang thoat menu giao dich...\n"); break;
                         default: printf("Vui long chon tu 1->3!\n");
                     }
                 } while (choice2 != 3);
@@ -422,4 +572,3 @@ int main() {
     }
     return 0;
 }
-
